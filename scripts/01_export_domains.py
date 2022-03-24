@@ -40,6 +40,7 @@ def main(args):
         varid = varid,
         csqs = csqs)
     ht = ht.select('rsid','info','MAF', 'MAC', 'varid','csqs', 'consequence_category')
+    ht = ht.explode(ht.csqs.domains)
     ht.flatten().export(out_prefix + ".tsv.gz")
 
 if __name__=='__main__':

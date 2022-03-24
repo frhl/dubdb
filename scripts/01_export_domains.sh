@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-#$ -N export_csqs
-#$ -wd /well/lindgren-ukbb/projects/ukbb-11867/flassen/projects/KO/wes_ko_ukbb
-#$ -o logs/export_csqs.log
-#$ -e logs/export_csqs.errors.log
+#$ -N export_domains
+#$ -wd /well/lindgren-ukbb/projects/ukbb-11867/flassen/projects/dubdb
+#$ -o logs/export_domains.log
+#$ -e logs/export_domains.errors.log
 #$ -P lindgren.prjc
 #$ -pe shmem 1
-#$ -q short.qc@@short.hga
+#$ -q short.qf
 #$ -t 1-22
 
 set -o errexit
@@ -16,19 +16,19 @@ source utils/bash_utils.sh
 source utils/qsub_utils.sh
 source utils/hail_utils.sh
 
-readonly spark_dir="data/tmp/spark_dir"
-readonly hail_script="scripts/03_export_csqs.py"
-readonly rscript="scripts/03_export_csqs.R"
+readonly spark_dir="data/tmp/spark"
+readonly hail_script="scripts/01_export_domains.py"
+readonly rscript="scripts/01_export_domains.R"
 
 readonly chr=$( get_chr ${SGE_TASK_ID} ) 
 readonly in_dir="data/mt/annotated"
 readonly input_prefix="${in_dir}/ukb_eur_wes_200k_annot_chr${chr}.mt"
 
-readonly out_dir="data/mt/vep"
-readonly out_prefix="${out_dir}/ukb_eur_wes_200k_csqs_chr${chr}"
-readonly out_saige="${out_prefix}.saige"
+readonly out_dir="data/domains"
+readonly out_prefix="${out_dir}/ukb_eur_wes_200k_domains_chr${chr}"
+readonly out_r_prefix="${out_dir}/ukb_eur_wes_200k_ubiqitin_chr${chr}"
 
-
+mkdir -p ${spark_dir}
 mkdir -p ${out_dir}
 
 if [ ! -f "${out_prefix}.tsv.gz" ]; then
@@ -48,8 +48,9 @@ fi
 module purge
 set_up_rpy
 Rscript ${rscript} \
+  --chrom ${chr} \
   --input_path "${out_prefix}.tsv.gz" \
-  --output_path "${out_saige}" \
-  --delimiter " "
+  --output_path "${out_r_prefix}.txt.gz" \
+  --delimiter "\t"
 
 
